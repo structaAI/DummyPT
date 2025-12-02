@@ -1,0 +1,62 @@
+# DummyPT-124M-GPU (Optimized for single GPU)
+extends: "124m/base.yaml"
+
+model:
+  # GPU-specific optimizations
+  use_flash_attention_2: true
+  use_sdpa: true
+  use_mem_efficient_attention: true
+  
+  # CUDA kernels
+  use_cutlass: false           # Not needed for small model
+  use_triton: false
+  
+  # Memory layout
+  contiguous_params: true
+  flatten_parameters: true
+
+training:
+  # GPU training optimization
+  micro_batch_size: 64         # Larger batches on GPU
+  gradient_accumulation_steps: 2
+  
+  # Mixed precision
+  fp16: true
+  bf16: true                  # For Ampere+ GPUs
+  
+  # Memory optimizations
+  gradient_checkpointing: false
+  
+  # CUDA specific
+  cudnn_benchmark: true
+  cudnn_deterministic: false
+  
+  # Distributed training (single GPU)
+  ddp: false
+  fsdp: false
+  tensor_parallel_size: 1
+
+inference:
+  # GPU inference optimizations
+  max_batch_size: 16          # Batch inference
+  use_vllm: false             # vLLM for larger models
+  use_tensorrt: false
+  
+  # CUDA graphs
+  use_cuda_graphs: true
+  cuda_graph_pool_size: 10
+  
+  # Kernel selection
+  kernel: "auto"              # auto, xformers, flash_attn
+  matmul_precision: "medium"
+
+hardware:
+  # GPU requirements
+  min_vram: "4 GB"            # For FP16 training
+  recommended_vram: "8 GB"
+  min_compute: 6.0            # Pascal or newer
+  recommended_compute: 7.5    # Turing or newer
+  
+  # Multi-GPU
+  multi_gpu_strategy: null
+  device_map: "auto"

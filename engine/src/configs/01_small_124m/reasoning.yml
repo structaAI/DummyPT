@@ -1,0 +1,61 @@
+# DummyPT-124M-Reasoning (Enhanced for reasoning tasks)
+extends: "124m/base.yaml"
+
+model:
+  # Reasoning-specific architecture
+  use_reasoning_layers: true
+  reasoning_layer_interval: 3  # Every 3rd layer is reasoning-enhanced
+  
+  # Reasoning attention
+  reasoning_heads: 4           # Dedicated reasoning heads
+  reasoning_head_dim: 96
+  use_causal_attention: true
+  
+  # Working memory mechanism
+  working_memory_size: 256
+  working_memory_layers: [3, 6, 9]
+  memory_update_gate: true
+  
+  # Explicit reasoning steps
+  use_step_by_step: true
+  max_reasoning_steps: 8
+  step_embedding_dim: 128
+  
+  # Confidence estimation
+  use_confidence_head: true
+  confidence_layers: [12]      # Last layer
+  
+  # Verification mechanism
+  use_verification: true
+  verification_layers: [6, 12]
+
+training:
+  # Reasoning-specific training
+  reasoning_dataset_ratio: 0.5  # 50% reasoning data
+  cot_supervision: true         # Chain-of-thought supervision
+  
+  # Loss functions
+  use_consistency_loss: true
+  consistency_weight: 0.1
+  use_step_loss: true
+  step_weight: 0.05
+  
+  # Curriculum learning
+  curriculum: true
+  start_seq_len: 512
+  final_seq_len: 2048
+
+inference:
+  # Reasoning inference settings
+  reasoning_mode: "auto"       # auto, step_by_step, direct
+  show_reasoning_steps: true
+  max_reasoning_depth: 5
+  
+  # Step-by-step generation
+  generate_steps: true
+  step_temperature: 0.8
+  step_top_p: 0.95
+  
+  # Confidence threshold
+  min_confidence: 0.3
+  confidence_sampling: true

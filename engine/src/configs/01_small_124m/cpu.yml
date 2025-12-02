@@ -1,0 +1,62 @@
+# DummyPT-124M-CPU (Optimized for CPU inference/training)
+extends: "124m/base.yaml"
+
+model:
+  # CPU-specific optimizations
+  use_flash_attention: false    # Disable on CPU
+  use_sdpa: true               # Use Scaled Dot Product Attention
+  
+  # Quantization for CPU
+  weight_dtype: "q4_0"         # GGML quantization
+  group_size: 32
+  
+  # Memory optimizations
+  kv_cache_dtype: "int8"
+  use_static_kv_cache: true
+
+training:
+  # CPU training settings
+  micro_batch_size: 8          # Smaller batches for CPU
+  gradient_accumulation_steps: 16
+  
+  # Mixed precision disabled for CPU
+  fp16: false
+  bf16: false
+  
+  # Memory saving techniques
+  gradient_checkpointing: true
+  cpu_offload: true
+  
+  # Optimizer for CPU
+  optimizer: "adamw_8bit"      # 8-bit optimizer
+  use_paged_optimizer: true
+
+inference:
+  # CPU inference optimizations
+  batch_size: 1                # Single sequence inference
+  use_ggml: true
+  ggml_type: "q4_0"
+  
+  # Thread configuration
+  cpu_threads: 8
+  use_mkl: true
+  use_avx2: true
+  use_f16c: true
+  
+  # Memory mapping
+  use_mmap: true
+  use_mlock: false
+
+quantization:
+  method: "ggml"
+  bits: 4
+  block_size: 32
+  quant_type: "q4_0"
+  
+  # Post-training quantization
+  calibration_dataset: "wikitext-2"
+  calibration_samples: 128
+  
+  # CPU-specific formats
+  export_format: "gguf"
+  gguf_version: 2

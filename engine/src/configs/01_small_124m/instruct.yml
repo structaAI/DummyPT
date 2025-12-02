@@ -1,0 +1,54 @@
+# DummyPT-124M-Instruct (Instruction tuned)
+extends: "124m/base.yaml"
+
+model:
+  # Instruction tuning adaptations
+  use_chat_template: true
+  chat_template: "dummypt"
+  
+  # System prompt support
+  system_prompt_support: true
+  max_system_tokens: 256
+  
+  # Stop tokens
+  stop_tokens: ["</s>", "<|endoftext|>", "###", "Human:", "Assistant:"]
+  stop_strings: ["\n\nHuman:", "\n\nUser:"]
+
+training:
+  # Instruction tuning datasets
+  datasets:
+    - name: "alpaca"
+      ratio: 0.4
+    - name: "dolly"
+      ratio: 0.3
+    - name: "sharegpt"
+      ratio: 0.3
+  
+  # Training format
+  format: "chatml"            # <|im_start|>, <|im_end|>
+  add_special_tokens: true
+  
+  # Supervised fine-tuning
+  sft:
+    epochs: 3
+    learning_rate: 2e-5
+    warmup_ratio: 0.03
+    
+  # Alignment (optional)
+  dpo: false
+  rlhf: false
+
+inference:
+  # Chat settings
+  chat_mode: true
+  default_system_prompt: "You are DummyPT, a helpful AI assistant."
+  
+  # Response formatting
+  add_generation_prompt: true
+  trim_response: true
+  remove_stop_strings: true
+  
+  # Safety
+  safety_checker: true
+  max_bad_words: 10
+  toxicity_threshold: 0.8
