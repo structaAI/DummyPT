@@ -1,0 +1,78 @@
+# DummyPT-770M-Base (770 Million Parameters)
+model:
+  name: "dummypt-770m-base"
+  version: "1.0"
+  total_params: 770000000
+  
+  # Core Architecture (Increased from 124M)
+  d_model: 1024               # +256 from 124M
+  n_layers: 24                # Double the layers
+  n_heads: 16                 # More attention heads
+  head_dim: 64                # 1024/16 = 64
+  
+  # Feed-Forward Network
+  ff_dim: 4096                # 4 * d_model
+  ffn_multiplier: 4
+  activation: "swiglu"        # SwiGLU for better performance
+  gated_ffn: true
+  
+  # Embeddings
+  vocab_size: 50257
+  max_position_embeddings: 4096  # Longer context
+  rope_theta: 10000.0
+  rope_scaling: "linear"      # Support longer sequences
+  
+  # Normalization & Dropout
+  layer_norm_eps: 1e-5
+  rms_norm: true
+  attention_dropout: 0.1
+  residual_dropout: 0.1
+  embedding_dropout: 0.1
+  
+  # Bias Configuration
+  bias: false
+  use_qkv_bias: false
+  
+  # Memory Estimates
+  memory_fp32: "3.08 GB"      # 770M * 4 bytes
+  memory_fp16: "1.54 GB"
+  memory_int8: "770 MB"
+  memory_int4: "385 MB"
+
+training:
+  global_batch_size: 256
+  micro_batch_size: 16        # Smaller due to larger model
+  gradient_accumulation_steps: 16
+  
+  # Learning Rate
+  learning_rate: 1.5e-4       # Lower LR for larger model
+  min_lr: 5e-6
+  warmup_steps: 2000
+  decay_steps: 100000
+  
+  # Optimizer
+  optimizer: "adamw"
+  weight_decay: 0.01
+  
+  # Mixed Precision
+  fp16: true
+  bf16: true                  # Enable bfloat16
+  
+  # Memory Optimizations (now needed)
+  gradient_checkpointing: true
+  offload_optimizer: false
+  offload_param: false
+
+inference:
+  max_new_tokens: 2048        # Longer generations
+  temperature: 0.7
+  
+  # Performance optimizations
+  use_cache: true
+  use_flash_attention: true
+  
+  # Hardware Requirements
+  vram_fp16: "3 GB"
+  vram_int8: "1.5 GB"
+  cpu_ram_fp32: "6 GB"
+  cpu_ram_int8: "3 GB"

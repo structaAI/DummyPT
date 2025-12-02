@@ -1,0 +1,30 @@
+# DummyPT-770M-CPU
+extends: "770m/base.yaml"
+
+model:
+  use_flash_attention: false
+  use_sdpa: true
+  
+  # More aggressive quantization
+  weight_dtype: "q4_0"
+  group_size: 64
+
+training:
+  micro_batch_size: 4         # Very small batches
+  gradient_accumulation_steps: 64
+  
+  fp16: false
+  bf16: false
+  
+  gradient_checkpointing: true
+  cpu_offload: true
+  
+  optimizer: "adamw_8bit"
+
+inference:
+  batch_size: 1
+  use_ggml: true
+  ggml_type: "q4_0"
+  
+  cpu_threads: 12
+  use_mmap: true

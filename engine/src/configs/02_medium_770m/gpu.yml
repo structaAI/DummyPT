@@ -1,0 +1,30 @@
+# DummyPT-770M-GPU
+extends: "770m/base.yaml"
+
+model:
+  use_flash_attention_2: true
+  use_mem_efficient_attention: true
+  
+  # Consider tensor parallelism for multi-GPU
+  tensor_parallel_size: 1
+
+training:
+  micro_batch_size: 32
+  gradient_accumulation_steps: 8
+  
+  fp16: true
+  bf16: true
+  
+  # FSDP for multi-GPU
+  fsdp: false
+  fsdp_strategy: "full_shard"
+
+inference:
+  max_batch_size: 8
+  use_vllm: false
+  use_cuda_graphs: true
+
+hardware:
+  min_vram: "8 GB"
+  recommended_vram: "16 GB"
+  min_compute: 7.0
