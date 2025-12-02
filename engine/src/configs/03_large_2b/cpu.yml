@@ -1,0 +1,60 @@
+# DummyPT-2B-CPU (CPU-only deployment)
+extends: "2b/base.yaml"
+
+model:
+  # Extreme quantization for CPU
+  weight_dtype: "q3_k_s"      # 3-bit quantization
+  group_size: 128
+  
+  # Disable GPU-only features
+  use_flash_attention: false
+  use_rotary_kernel: false
+
+training:
+  # CPU training (challenging but possible)
+  micro_batch_size: 1         # Single sequence
+  gradient_accumulation_steps: 512
+  
+  fp16: false
+  bf16: false
+  
+  # Advanced CPU optimizations
+  gradient_checkpointing: true
+  cpu_offload: true
+  use_disk_offload: true     # Use disk for swapping
+  
+  optimizer: "adamw_8bit"
+  use_paged_optimizer: true
+
+inference:
+  # CPU inference with heavy optimization
+  batch_size: 1
+  use_ggml: true
+  ggml_type: "q3_k_s"
+  
+  # Multi-threading
+  cpu_threads: 16
+  cpu_threads_for_generation: 8
+  
+  # Memory mapping
+  use_mmap: true
+  use_mlock: true            # Lock memory for speed
+  
+  # Chunked processing
+  chunk_size: 512
+  overlap_size: 64
+
+quantization:
+  method: "ggml"
+  bits: 3
+  block_size: 128
+  quant_type: "q3_k_s"
+  
+  # Advanced CPU formats
+  export_format: "gguf"
+  gguf_version: 3
+  
+  # Quantization calibration
+  calibration_dataset: "c4"
+  calibration_samples: 1024
+  calibration_method: "minmax"

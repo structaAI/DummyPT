@@ -1,0 +1,71 @@
+# DummyPT-2B-GPU (Multi-GPU optimized)
+extends: "2b/base.yaml"
+
+model:
+  # Advanced GPU optimizations
+  use_flash_attention_2: true
+  use_xformers: true
+  use_cutlass: true          # Use CUTLASS kernels
+  
+  # Distributed model
+  tensor_parallel_size: 2
+  pipeline_parallel_size: 2  # Total 4 GPUs
+  sequence_parallel: true
+  selective_recompute: true
+  
+  # Memory optimizations
+  contiguous_params: true
+  flatten_parameters: true
+  use_zero_offload: true
+
+training:
+  # Multi-GPU training
+  micro_batch_size: 4
+  gradient_accumulation_steps: 32
+  
+  # Advanced mixed precision
+  fp16: true
+  bf16: true
+  fp8: false                 # Future: H100 support
+  
+  # DeepSpeed integration
+  use_deepspeed: true
+  deepspeed_config: "configs/deepspeed/z3.json"
+  
+  # Checkpointing
+  checkpoint_interval: 1000
+  checkpoint_format: "safetensors"
+
+inference:
+  # High-performance inference
+  max_batch_size: 32
+  use_vllm: true
+  vllm_config:
+    max_num_seqs: 64
+    max_model_len: 8192
+    gpu_memory_utilization: 0.9
+    enforce_eager: false
+  
+  # TensorRT optimization
+  use_tensorrt: false        # Optional for deployment
+  trt_precision: "fp16"
+  
+  # CUDA graphs
+  use_cuda_graphs: true
+  cuda_graph_max_seq_len: 2048
+  cuda_graph_batch_sizes: [1, 2, 4, 8, 16]
+
+hardware:
+  # Multi-GPU requirements
+  min_gpus: 2
+  recommended_gpus: 4
+  vram_per_gpu: "12 GB"
+  total_vram: "48 GB"
+  
+  # GPU specifications
+  min_compute: 7.0           # Volta or newer
+  recommended_compute: 8.0   # Ampere or newer
+  
+  # Interconnect
+  need_nvlink: true
+  min_pcie: "PCIe 4.0 x16"

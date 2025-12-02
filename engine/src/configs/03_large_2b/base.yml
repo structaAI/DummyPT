@@ -1,0 +1,68 @@
+# DummyPT-2B-Base (2 Billion Parameters)
+model:
+  name: "dummypt-2b-base"
+  version: "1.0"
+  total_params: 2000000000
+  
+  # Core Architecture
+  d_model: 2048               # Double from 770M
+  n_layers: 32                # More layers
+  n_heads: 32                 # More heads
+  head_dim: 64                # 2048/32 = 64
+  
+  # Feed-Forward Network
+  ff_dim: 8192                # 4 * d_model
+  ffn_multiplier: 4
+  activation: "swiglu"
+  gated_ffn: true
+  
+  # Embeddings
+  vocab_size: 50257
+  max_position_embeddings: 8192  # 8K context
+  rope_theta: 10000.0
+  rope_scaling: "linear"
+  
+  # Advanced features
+  use_parallel_attention: true
+  use_rotary_kernel: true
+  
+  # Memory Estimates
+  memory_fp32: "8 GB"
+  memory_fp16: "4 GB"
+  memory_int8: "2 GB"
+  memory_int4: "1 GB"
+
+training:
+  global_batch_size: 512
+  micro_batch_size: 8         # Small per-device batches
+  gradient_accumulation_steps: 64
+  
+  # Learning Rate
+  learning_rate: 1e-4         # Even lower LR
+  min_lr: 1e-6
+  warmup_steps: 5000
+  decay_steps: 200000
+  
+  # Memory optimizations (essential)
+  gradient_checkpointing: true
+  offload_optimizer: true     # CPU offloading
+  offload_param: true
+  
+  # Distributed training
+  tensor_parallel_size: 2     # 2-way tensor parallelism
+  pipeline_parallel_size: 1
+  sequence_parallel: true
+
+inference:
+  max_new_tokens: 4096
+  temperature: 0.7
+  
+  # Advanced inference
+  use_vllm: true              # Use vLLM for efficiency
+  vllm_max_num_seqs: 64
+  vllm_max_model_len: 8192
+  
+  # Hardware Requirements
+  vram_fp16: "8 GB"
+  vram_int8: "4 GB"
+  cpu_ram_fp32: "16 GB"
